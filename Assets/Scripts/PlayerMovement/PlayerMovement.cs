@@ -1,57 +1,33 @@
-using Unity.VisualScripting;
-using UnityEditor.Callbacks;
 using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
 
 public class PlayerMovement : MonoBehaviour
 {
-    private float m_jumpForces = 10f; // amount of Jump Forces
-    private float m_playerSpeed = 3;
-    public Rigidbody2D rb;
-    public bool isGrounded;
-    
-    
-    void Start()
-    {
-        rb = GetComponent<Rigidbody2D>();
-        isGrounded = false;
-    }
+    public CharacterController2D controller;
+    public float runSpeed = 40f;
+    float horizontalMove = 0f;
+    bool jump = false;
+    private float jumpBufferTime = 0.2f;
+    private float jumpBufferCounter;
 
-    
     void Update()
     {
-        PlayerController();
-
-    }
-    void PlayerController()
-    {
-        if (Input.GetKey(KeyCode.D)) //move to right
+        horizontalMove = Input.GetAxisRaw("Horizontal") * runSpeed;
+        if (Input.GetButtonDown("Jump"))
         {
-            transform.localScale  = new Vector3(1, 1, 1); //mage facing to right upon pressing D
-            rb.linearVelocity = new Vector2(m_playerSpeed, rb.linearVelocityY);
+            jump = true;
+            jumpBufferCounter = jumpBufferTime;
         }
-        if (Input.GetKey(KeyCode.A)) //move to left
+        else
         {
-            transform.localScale  = new Vector3(-1, 1, 1); //mage facing to left upon pressing A
-            rb.linearVelocity = new Vector2(-m_playerSpeed, rb.linearVelocityY);
-        }
-        if (Input.GetKeyDown(KeyCode.W) && isGrounded) //jumping
-        {
-            rb.linearVelocity = new Vector2(rb.linearVelocityX, m_jumpForces);
-        }
-        
-    }
-    private void OnCollisionEnter2D(Collision2D other) //when entering ground set isGrounded to true
-    {
-        if (other.gameObject.CompareTag("Ground")) //checking if player and gameObject with "Ground" tag colliding
-        {
-            isGrounded = true;
+            jumpBufferCounter -= Time.deltaTime;
         }
     }
-    private void OnCollisionExit2D(Collision2D other) //when leaving ground set isGrounded to false
+    void FixedUpdate()
     {
-        if (other.gameObject.CompareTag("Ground"))
-        {
-            isGrounded = false;
-        }
+        controller.Move(horizontalMove * Time.fixedDeltaTime, jump);
+        jump = false;
+        jumpBufferCounter = 0f;
     }
 }
