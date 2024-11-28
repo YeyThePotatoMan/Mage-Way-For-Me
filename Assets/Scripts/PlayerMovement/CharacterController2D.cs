@@ -48,7 +48,7 @@ public class CharacterController2D : MonoBehaviour
     public void Move(float move, bool jump)
     {
         // Only control the player if grounded or airControl is enabled.
-        if (m_Grounded || m_AirControl)
+        if (m_Grounded || m_AirControl)//if airControl is unabled you can't control the player mid air
         {
             // Calculate the target velocity and smooth movement.
             Vector3 targetVelocity = new Vector2(move * 10f, m_Rigidbody2D.linearVelocityY);

@@ -26,7 +26,7 @@ public class PlayerMovement : MonoBehaviour
     }
     void FixedUpdate()
     {
-        controller.Move(horizontalMove * Time.fixedDeltaTime, jump);
+        controller.Move(horizontalMove * Time.fixedDeltaTime, jump);//moving horizontally and jumping
         jump = false;
         jumpBufferCounter = 0f;
     }
