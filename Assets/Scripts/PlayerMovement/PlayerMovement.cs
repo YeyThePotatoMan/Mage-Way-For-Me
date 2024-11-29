@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class PlayerMovement : MonoBehaviour
 {
     public CharacterController2D controller;
-    public float runSpeed = 40f;
+    public float runSpeed = 40f; //value of running speed
     float horizontalMove = 0f;
     bool jump = false;
     private float jumpBufferTime = 0.2f;
