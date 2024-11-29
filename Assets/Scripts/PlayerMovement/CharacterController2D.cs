@@ -4,7 +4,7 @@ using UnityEngine.Events;
 public class CharacterController2D : MonoBehaviour
 {
     [SerializeField] private float m_JumpForce = 400f;                            // Force added when the player jumps.
-    [Range(0, .3f)] [SerializeField] private float m_MovementSmoothing = .05f;   // Smoothing for movement.
+    [Range(0, .3f)][SerializeField] private float m_MovementSmoothing = .05f;   // Smoothing for movement.
     [SerializeField] private bool m_AirControl = false;                          // Can the player steer while jumping.
     [SerializeField] private LayerMask m_WhatIsGround;                           // What is considered ground.
     [SerializeField] private Transform m_GroundCheck;                            // Position to check if the player is grounded.
@@ -45,7 +45,7 @@ public class CharacterController2D : MonoBehaviour
         }
     }
 
-    public void Move(float move, bool jump)
+    public void Move(float move)
     {
         // Only control the player if grounded or airControl is enabled.
         if (m_Grounded || m_AirControl)//if airControl is unabled you can't control the player mid air
@@ -64,12 +64,22 @@ public class CharacterController2D : MonoBehaviour
                 Flip();
             }
         }
+    }
 
+    // Return apakah berhasil lompat
+    public bool Jump()
+    {
         // Handle jumping.
-        if (m_Grounded && jump)
+        if (m_Grounded)
         {
             m_Grounded = false;
             m_Rigidbody2D.AddForce(new Vector2(0f, m_JumpForce));
+
+            return true; // Berhasil lompat
+        }
+        else
+        {
+            return false;  // Tidak bisa lompat
         }
     }
 
