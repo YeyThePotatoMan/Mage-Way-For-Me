@@ -33,7 +33,7 @@ public class PortalTeleportController : MonoBehaviour
         otherData.isTeleporting = true;
 
         Vector3 toCenter = transform.position - other.transform.position;
-
+    
         // Flip game object tergantung perubahan arah
         bool flipX = Mathf.Sign(transform.localScale.x) != Mathf.Sign(_otherPortalTransform.localScale.x);
         bool flipY = Mathf.Sign(transform.localScale.y) != Mathf.Sign(_otherPortalTransform.localScale.y);
@@ -80,6 +80,13 @@ public class PortalTeleportController : MonoBehaviour
     // Rotate vector with angle in degree
     private Vector2 RotateVector(Vector2 a, float angle)
     {
+        /*
+        Matrix rotasi
+        |x'| = |cos -sin||x|
+        |y'|   |sin cos ||y|
+        */
+        // Ubah jadi radian
+        angle = angle * Mathf.PI / 180f;
         float x = a.x * Mathf.Cos(angle) - a.y * Mathf.Sin(angle);
         float y = a.x * Mathf.Sin(angle) + a.y * Mathf.Cos(angle);
         return new Vector2(x, y);

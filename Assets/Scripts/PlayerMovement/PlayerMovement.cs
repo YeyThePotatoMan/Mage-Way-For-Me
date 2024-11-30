@@ -22,7 +22,7 @@ public class PlayerMovement : MonoBehaviour
     }
     void FixedUpdate()
     {
-        // Jalan setiap saat
+        // Jalan horizontal setiap saat
         controller.Move(_horizontalMove * Time.fixedDeltaTime);
 
         if (_jumpBufferCounter > 0)

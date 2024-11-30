@@ -127,6 +127,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 124771289940957663, guid: 1e3a4c6bc55cf40a4ad0ade94c28ff4e, type: 3}
+      propertyPath: m_WhatIsGround.m_Bits
+      value: 64
+      objectReference: {fileID: 0}
     - target: {fileID: 4428868137907306229, guid: 1e3a4c6bc55cf40a4ad0ade94c28ff4e, type: 3}
       propertyPath: m_LocalPosition.x
       value: -7.379363
@@ -226,7 +230,7 @@ GameObject:
   - component: {fileID: 259500203}
   - component: {fileID: 259500202}
   - component: {fileID: 259500201}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Ground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -18051,8 +18055,8 @@ Transform:
   m_GameObject: {fileID: 572891165}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -4.8, y: -1, z: 0.009279668}
-  m_LocalScale: {x: 0.4, y: 2, z: 1}
+  m_LocalPosition: {x: -4.8, y: -0.39, z: 0.009279668}
+  m_LocalScale: {x: 0.4, y: 4, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1305828174}
@@ -18129,7 +18133,7 @@ GameObject:
   - component: {fileID: 780248037}
   - component: {fileID: 780248039}
   - component: {fileID: 780248038}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Bawah
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -18263,7 +18267,7 @@ GameObject:
   - component: {fileID: 867925125}
   - component: {fileID: 867925127}
   - component: {fileID: 867925126}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Atas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -18397,7 +18401,7 @@ GameObject:
   - component: {fileID: 1198308080}
   - component: {fileID: 1198308082}
   - component: {fileID: 1198308081}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Bawah
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -18531,7 +18535,7 @@ GameObject:
   - component: {fileID: 1305828174}
   - component: {fileID: 1305828176}
   - component: {fileID: 1305828175}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Atas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -34898,15 +34902,15 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2035239069}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.2, y: -1, z: 0.009279668}
-  m_LocalScale: {x: 0.4, y: 2, z: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0.7071068, w: 0.7071068}
+  m_LocalPosition: {x: -1.29, y: 2.53, z: 0.009279668}
+  m_LocalScale: {x: 0.4, y: 4, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 867925125}
   - {fileID: 780248037}
   m_Father: {fileID: 245749534}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90}
 --- !u!212 &2035239071
 SpriteRenderer:
   m_ObjectHideFlags: 0
