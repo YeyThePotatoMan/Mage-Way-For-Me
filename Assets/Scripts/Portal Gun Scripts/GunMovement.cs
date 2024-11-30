@@ -6,10 +6,10 @@ using UnityEngine;
 public class GunMovement : MonoBehaviour
 {
     public Transform player;
-    public Vector3 mousePos;
-    public Vector3 mousePosRelative;
-    public Vector3 portalGunPos;
-    public float portalGunRotation;
+    private Vector3 mousePos;
+    private Vector3 mousePosRelative;
+    private Vector3 portalGunPos;
+    private float portalGunRotation;
 
     void Update ()
     {

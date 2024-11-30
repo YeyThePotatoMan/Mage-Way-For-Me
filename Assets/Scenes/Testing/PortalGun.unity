@@ -460,9 +460,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 05e5ce0a09e675f42aa91f60cf8d3b4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 0}
+  player: {fileID: 1650684559}
   mousePos: {x: 0, y: 0, z: 0}
+  mousePosRelative: {x: 0, y: 0, z: 0}
   portalGunPos: {x: 0, y: 0, z: 0}
+  portalGunRotation: 0
 --- !u!114 &1956305663
 MonoBehaviour:
   m_ObjectHideFlags: 0
