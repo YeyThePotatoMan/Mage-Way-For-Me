@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using MessagePack;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Tilemaps;
 
 /// <summary>
@@ -10,6 +11,16 @@ using UnityEngine.Tilemaps;
 /// <summary>
 public class LevelEditorManager : MonoBehaviour
 {
+    public struct EditAction
+    {
+        public enum ActionType { Tile }
+
+        public ActionType actionType;
+        // The tiles that was placed or deleted. Tuple consists of tilemap index, x, and y.
+        public Dictionary<Tuple<int, int, int>, Tile> pastTiles;
+        public Dictionary<Tuple<int, int, int>, Tile> newTiles;
+    }
+
     // Singleton instance of the LevelEditorManager.
     public static LevelEditorManager Instance { get; private set; }
 
@@ -23,6 +34,11 @@ public class LevelEditorManager : MonoBehaviour
         tiles = new string[0],
         tilemapData = new Dictionary<Tuple<int, int, int>, int>()
     };
+    // The history of edit actions.
+    public Stack<EditAction> editHistory = new();
+    public Stack<EditAction> redoHistory = new();
+
+    public UnityEvent EditEvent = new();
 
     // The tile currently selected to be placed.
     [HideInInspector] public Tile selectedTileToPlace;
@@ -42,6 +58,12 @@ public class LevelEditorManager : MonoBehaviour
 
     // The instance of the tile mask.
     private GameObject _tileMaskInstance;
+    // Indicates whether the user is filling tiles.
+    private bool _isFilling = false;
+    // Indicates whether the user is deleting tiles.
+    private bool _isDeleting = false;
+    // The start cell position for filling or deleting tiles.
+    private Vector3Int _fillStartCellPos;
 
     // The path to save user levels.
     private readonly string _userLevelsPath = "UserData/Levels/";
@@ -74,13 +96,60 @@ public class LevelEditorManager : MonoBehaviour
 
         // Place tile when selected tile is not null
         _ghostTilemap.ClearAllTiles();
-        if (selectedTileToPlace != null) _ghostTilemap.SetTile(cellPos, selectedTileToPlace);
+        int startX = _fillStartCellPos.x > cellPos.x ? cellPos.x : _fillStartCellPos.x;
+        int startY = _fillStartCellPos.y > cellPos.y ? cellPos.y : _fillStartCellPos.y;
+        int endX = _fillStartCellPos.x > cellPos.x ? _fillStartCellPos.x : cellPos.x;
+        int endY = _fillStartCellPos.y > cellPos.y ? _fillStartCellPos.y : cellPos.y;
+        if (selectedTileToPlace != null)
+        {
+            if (_isFilling)
+            {
+                for (int x = startX; x <= endX; x++)
+                    for (int y = startY; y <= endY; y++)
+                        _ghostTilemap.SetTile(new Vector3Int(x, y, 0), selectedTileToPlace);
+            }
+            else
+            {
+                _ghostTilemap.SetTile(cellPos, selectedTileToPlace);
+            }
+        }
 
         // Tile placement input controller
         if (tileEditingEnabled)
         {
-            if (selectedTileToPlace != null && Input.GetMouseButton(0)) SetTile(selectedTileToPlace, 0, cellPos);
-            else if (Input.GetMouseButton(1)) DeleteTile(0, cellPos);
+            if (selectedTileToPlace != null && !_isDeleting)
+            {
+                if (!_isFilling && Input.GetMouseButtonDown(0))
+                {
+                    _isFilling = true;
+                    _fillStartCellPos = cellPos;
+                }
+                else if (_isFilling && Input.GetMouseButtonUp(0))
+                {
+                    _isFilling = false;
+                    SetTileRange(selectedTileToPlace, 0, _fillStartCellPos, cellPos);
+                }
+            }
+            if (!_isFilling)
+            {
+                if (!_isDeleting && Input.GetMouseButtonDown(1))
+                {
+                    _isDeleting = true;
+                    _fillStartCellPos = cellPos;
+                }
+                else if (_isDeleting && Input.GetMouseButtonUp(1))
+                {
+                    _isDeleting = false;
+                    SetTileRange(null, 0, _fillStartCellPos, cellPos);
+                }
+            }
+        }
+
+        // Undo and Redo
+        if (Input.GetKey(KeyCode.LeftControl))
+        {
+            if (Input.GetKeyDown(KeyCode.Z)) Undo();
+            if (Input.GetKeyDown(KeyCode.Y)) Redo();
         }
 
         // Position tile mask
@@ -93,7 +162,18 @@ public class LevelEditorManager : MonoBehaviour
             }
             else
             {
-                _tileMaskInstance.transform.position = _grid.CellToWorld(cellPos) + _ghostTilemap.tileAnchor;
+                if (_isFilling)
+                {
+                    _tileMaskInstance.transform.localScale = new Vector3(endX - startX + 1, endY - startY + 1, 1);
+                    _tileMaskInstance.transform.position = _grid.CellToWorld(new Vector3Int(startX, startY, 0))
+                        + _ghostTilemap.tileAnchor
+                        + new Vector3((endX - startX) / 2f, (endY - startY) / 2f, 0);
+                }
+                else
+                {
+                    _tileMaskInstance.transform.localScale = Vector3.one;
+                    _tileMaskInstance.transform.position = _grid.CellToWorld(cellPos) + _ghostTilemap.tileAnchor;
+                }
             }
         }
         else if (_tileMaskInstance != null) Destroy(_tileMaskInstance);
@@ -156,24 +236,108 @@ public class LevelEditorManager : MonoBehaviour
         }
     }
 
+
     /// <summary>
-    /// Sets a tile at the specified position in the specified tilemap.
+    /// Sets a tile at the specified range in the specified tilemap.
     /// </summary>
     /// <param name="tile">The tile to set.</param>
     /// <param name="tilemapIndex">The index of the tilemap.</param>
-    /// <param name="position">The position to set the tile.</param>
-    public void SetTile(Tile tile, int tilemapIndex, Vector3Int position) { _tilemaps[tilemapIndex].SetTile(position, tile); }
+    /// <param name="startPosition">The start position to set the tile.</param>
+    /// <param name="endPosition">The end position to set the tile.</param>
+    public void SetTileRange(Tile tile, int tilemapIndex, Vector3Int startPosition, Vector3Int endPosition)
+    {
+        // Add edit action to history
+        EditAction editAction = new()
+        {
+            actionType = EditAction.ActionType.Tile,
+            pastTiles = new(),
+            newTiles = new()
+        };
+        bool didSomethingChanged = false;
 
-    /// <summary>
-    /// Deletes a tile at the specified position in the specified tilemap.
-    /// </summary>
-    /// <param name="tilemapIndex">The index of the tilemap.</param>
-    /// <param name="position">The position to delete the tile.</param>
-    public void DeleteTile(int tilemapIndex, Vector3Int position) { _tilemaps[tilemapIndex].SetTile(position, null); }
+        if (startPosition.x > endPosition.x) (endPosition.x, startPosition.x) = (startPosition.x, endPosition.x);
+        if (startPosition.y > endPosition.y) (endPosition.y, startPosition.y) = (startPosition.y, endPosition.y);
+
+        for (int x = startPosition.x; x <= endPosition.x; x++)
+            for (int y = startPosition.y; y <= endPosition.y; y++)
+            {
+                // Store the past tile
+                Tile pastTile = _tilemaps[tilemapIndex].GetTile<Tile>(new Vector3Int(x, y, 0));
+                editAction.pastTiles.Add(new Tuple<int, int, int>(tilemapIndex, x, y), pastTile);
+
+                if (pastTile != tile)
+                {
+                    didSomethingChanged = true;
+                    _tilemaps[tilemapIndex].SetTile(new Vector3Int(x, y, 0), tile);
+                }
+                editAction.newTiles.Add(new Tuple<int, int, int>(tilemapIndex, x, y), tile);
+            }
+
+        if (didSomethingChanged) RecordEdit(editAction);
+    }
 
     /// <summary>
     /// Enables or disables tile placement.
     /// </summary>
     /// <param name="enabled">True to enable tile placement, false to disable.</param>
-    public void SetTilePlacement(bool enabled) { tileEditingEnabled = enabled; }
+    public void ToggleTilePlacement(bool enabled) { tileEditingEnabled = enabled; }
+
+    /// <summary>
+    /// Records an edit action to the edit history. Clears the redo history.
+    /// </summary>
+    /// <param name="editAction">The edit action to record.</param>
+    public void RecordEdit(EditAction editAction)
+    {
+        editHistory.Push(editAction);
+        if (redoHistory.Count > 0) redoHistory.Clear();
+        EditEvent.Invoke();
+    }
+
+    /// <summary>
+    /// Undoes the last action.
+    /// </summary>
+    public void Undo()
+    {
+        if (editHistory.Count == 0) return;
+
+        EditAction editAction = editHistory.Pop();
+        redoHistory.Push(editAction);
+
+        switch (editAction.actionType)
+        {
+            case EditAction.ActionType.Tile:
+                foreach (var tile in editAction.pastTiles)
+                    _tilemaps[tile.Key.Item1].SetTile(new Vector3Int(tile.Key.Item2, tile.Key.Item3, 0), tile.Value);
+                break;
+            default:
+                Debug.LogError("Invalid edit action type");
+                break;
+        }
+
+        EditEvent.Invoke();
+    }
+
+    /// <summary>
+    /// Redoes the last undone action.
+    /// </summary>
+    public void Redo()
+    {
+        if (redoHistory.Count == 0) return;
+
+        EditAction editAction = redoHistory.Pop();
+        editHistory.Push(editAction);
+
+        switch (editAction.actionType)
+        {
+            case EditAction.ActionType.Tile:
+                foreach (var tile in editAction.newTiles)
+                    _tilemaps[tile.Key.Item1].SetTile(new Vector3Int(tile.Key.Item2, tile.Key.Item3, 0), tile.Value);
+                break;
+            default:
+                Debug.LogError("Invalid edit action type");
+                break;
+        }
+
+        EditEvent.Invoke();
+    }
 }
