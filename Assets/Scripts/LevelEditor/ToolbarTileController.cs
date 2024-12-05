@@ -58,6 +58,12 @@ public class ToolbarTileController : MonoBehaviour
         }
     }
 
+    // Deselect the tile when the toolbar is disabled.
+    private void OnDisable()
+    {
+        SelectTile(-1);
+    }
+
     /// <summary>
     /// HOF that returns a UnityAction that selects the tile at the given index. It is used for the click event of the toolbar tiles.
     /// </summary>
