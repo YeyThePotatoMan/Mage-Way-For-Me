@@ -38,12 +38,16 @@ public class LevelEditorManager : MonoBehaviour
     public Stack<EditAction> redoHistory = new();
     // The cursor state.
     public CursorState CurrentCursorState { get; private set; } = CursorState.Default;
+    // The selected tilemap index.
+    public int SelectedTilemapIndex { get; private set; } = 0;
 
     [Header("Events")]
     // The event invoked when an edit action is recorded.
     public UnityEvent EditEvent = new();
     // The event invoked when the cursor state is changed.
     public UnityEvent<CursorState> CursorChangeEvent = new();
+    // The event invoked when the tilemap is changed.
+    public UnityEvent<int> TilemapChangeEvent = new();
 
     // The tile currently selected to be placed.
     [HideInInspector] public Tile selectedTileToPlace;
@@ -293,6 +297,17 @@ public class LevelEditorManager : MonoBehaviour
         if (CurrentCursorState == cursorState) return;
         CurrentCursorState = cursorState;
         CursorChangeEvent.Invoke(cursorState);
+    }
+
+    /// <summary>
+    /// Changes the selected tilemap.
+    /// </summary>
+    /// <param name="index">Index of the tilemap.</param>
+    public void ChangeTilemap(int index)
+    {
+        if (SelectedTilemapIndex == index) return;
+        SelectedTilemapIndex = index;
+        TilemapChangeEvent.Invoke(index);
     }
 
     /// <summary>
