@@ -7,7 +7,7 @@ public class CharacterController2D : MonoBehaviour
     [Range(0, .3f)][SerializeField] private float _movementSmoothing = .05f;   // Smoothing for movement.
     [SerializeField] private bool _airControl = false;                          // Can the player steer while jumping.
     [SerializeField] private LayerMask _whatIsGround;                           // What is considered ground.
-    [SerializeField] private Transform _groundCheck;                            // Position to check if the player is grounded.
+    [SerializeField] private Collider2D _groundCheck;                            // Position to check if the player is grounded.
 
     private const float _groundedRadius = .2f; // Radius of the ground check circle.
     private bool _grounded;                   // Is the player grounded.
@@ -33,7 +33,7 @@ public class CharacterController2D : MonoBehaviour
         _grounded = false;
 
         // Check if the player is grounded.
-        Collider2D[] colliders = Physics2D.OverlapCircleAll(_groundCheck.position, _groundedRadius, _whatIsGround);
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(_groundCheck.transform.position, _groundedRadius, _whatIsGround);
         for (int i = 0; i < colliders.Length; i++)
         {
             if (colliders[i].gameObject != gameObject)
@@ -91,11 +91,13 @@ public class CharacterController2D : MonoBehaviour
         // Invert the player's x scale.
         Vector3 theScale = transform.localScale;
         // Lagi hadap kanan dan keflip ke kiri
-        if (_facingRight && Mathf.Sign(theScale.x) == -1) {
+        if (_facingRight && Mathf.Sign(theScale.x) == -1)
+        {
             theScale.x *= -1;
         }
         // Lagi hadap kiri dan belum diflip ke kiri
-        if (!_facingRight && Mathf.Sign(theScale.x) == 1) {
+        if (!_facingRight && Mathf.Sign(theScale.x) == 1)
+        {
             theScale.x *= -1;
         }
         transform.localScale = theScale;
