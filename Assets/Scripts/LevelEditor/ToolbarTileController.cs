@@ -80,8 +80,14 @@ public class ToolbarTileController : MonoBehaviour
     /// <param name="index">The index of the tile to select.</param>
     public void SelectTile(int index)
     {
-        if (index == _selectedTileIndex) _selectedTileIndex = -1;
-        else _selectedTileIndex = index;
+        if (index == _selectedTileIndex) {
+            _selectedTileIndex = -1;
+            LevelEditorManager.Instance.ChangeCursorState(LevelEditorManager.CursorState.Default);
+        }
+        else {
+            _selectedTileIndex = index;
+            LevelEditorManager.Instance.ChangeCursorState(LevelEditorManager.CursorState.Brush);
+        }
 
         for (int i = 0; i < _images.Count; i++)
         {

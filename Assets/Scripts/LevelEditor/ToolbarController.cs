@@ -108,6 +108,8 @@ class ToolbarController : MonoBehaviour
 
     _isToolbarOpen = !_isToolbarOpen;
 
+    if (!_isToolbarOpen) LevelEditorManager.Instance.ChangeCursorState(LevelEditorManager.CursorState.Default);
+
     StartCoroutine(ToggleCloseCoroutine());
   }
 

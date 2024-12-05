@@ -20,12 +20,10 @@ public class LevelEditorManager : MonoBehaviour
         public Dictionary<Tuple<int, int, int>, Tile> pastTiles;
         public Dictionary<Tuple<int, int, int>, Tile> newTiles;
     }
+    public enum CursorState { Default, Brush, Delete }
 
     // Singleton instance of the LevelEditorManager.
     public static LevelEditorManager Instance { get; private set; }
-
-    // Indicates whether tile editing is enabled.
-    public bool tileEditingEnabled = true;
 
     // The current level being edited.
     public Level level = new()
@@ -36,9 +34,16 @@ public class LevelEditorManager : MonoBehaviour
     };
     // The history of edit actions.
     public Stack<EditAction> editHistory = new();
+    // The history of redo actions.
     public Stack<EditAction> redoHistory = new();
+    // The cursor state.
+    public CursorState CurrentCursorState { get; private set; } = CursorState.Default;
 
+    [Header("Events")]
+    // The event invoked when an edit action is recorded.
     public UnityEvent EditEvent = new();
+    // The event invoked when the cursor state is changed.
+    public UnityEvent<CursorState> CursorChangeEvent = new();
 
     // The tile currently selected to be placed.
     [HideInInspector] public Tile selectedTileToPlace;
@@ -114,8 +119,8 @@ public class LevelEditorManager : MonoBehaviour
             }
         }
 
-        // Tile placement input controller
-        if (tileEditingEnabled)
+        // Tile placement input controller        
+        if (CurrentCursorState == CursorState.Brush || CurrentCursorState == CursorState.Delete)
         {
             if (selectedTileToPlace != null && !_isDeleting)
             {
@@ -135,15 +140,18 @@ public class LevelEditorManager : MonoBehaviour
                 if (!_isDeleting && Input.GetMouseButtonDown(1))
                 {
                     _isDeleting = true;
+                    ChangeCursorState(CursorState.Delete);
                     _fillStartCellPos = cellPos;
                 }
                 else if (_isDeleting && Input.GetMouseButtonUp(1))
                 {
                     _isDeleting = false;
+                    ChangeCursorState(CursorState.Brush);
                     SetTileRange(null, 0, _fillStartCellPos, cellPos);
                 }
             }
         }
+
 
         // Undo and Redo
         if (Input.GetKey(KeyCode.LeftControl))
@@ -277,10 +285,15 @@ public class LevelEditorManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Enables or disables tile placement.
+    /// Changes the cursor state.
     /// </summary>
-    /// <param name="enabled">True to enable tile placement, false to disable.</param>
-    public void ToggleTilePlacement(bool enabled) { tileEditingEnabled = enabled; }
+    /// <param name="cursorState">The cursor state to change to.</param>
+    public void ChangeCursorState(CursorState cursorState)
+    {
+        if (CurrentCursorState == cursorState) return;
+        CurrentCursorState = cursorState;
+        CursorChangeEvent.Invoke(cursorState);
+    }
 
     /// <summary>
     /// Records an edit action to the edit history. Clears the redo history.
