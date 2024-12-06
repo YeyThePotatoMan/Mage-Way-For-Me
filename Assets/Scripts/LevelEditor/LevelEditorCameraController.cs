@@ -3,7 +3,7 @@ using UnityEngine;
 /// <summary>
 /// This script is responsible for controlling the camera in the level editor.
 /// </summary>
-public class LevelEditoCameraController : MonoBehaviour
+public class LevelEditorCameraController : MonoBehaviour
 {
     [SerializeField] private float _movementSpeed = 5f;
     [SerializeField] private float _zoomSpeed = 5f;
