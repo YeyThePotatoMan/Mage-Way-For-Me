@@ -128,7 +128,7 @@ public class LevelEditorManager : MonoBehaviour
         {
             if (selectedTileToPlace != null && !_isDeleting)
             {
-                if (!_isFilling && Input.GetMouseButtonDown(0))
+                if (!_isFilling && !UserInterfaceHelper.IsPointerOverUIElement() && Input.GetMouseButtonDown(0))
                 {
                     _isFilling = true;
                     _fillStartCellPos = cellPos;
@@ -141,7 +141,7 @@ public class LevelEditorManager : MonoBehaviour
             }
             if (!_isFilling)
             {
-                if (!_isDeleting && Input.GetMouseButtonDown(1))
+                if (!_isDeleting && !UserInterfaceHelper.IsPointerOverUIElement() && Input.GetMouseButtonDown(1))
                 {
                     _isDeleting = true;
                     ChangeCursorState(CursorState.Delete);
