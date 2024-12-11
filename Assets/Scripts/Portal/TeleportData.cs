@@ -1,30 +1,38 @@
+using System;
 using UnityEngine;
 
 class TeleportData : MonoBehaviour
 {
-    private int _originalLayer;
-    public bool isTeleporting = false;
+    [HideInInspector] public Renderer spriteRenderer;
+    [HideInInspector] public int originalLayer;
+    [HideInInspector] public bool isTeleporting = false;
+    [HideInInspector] public Vector2 teleportDirection;
+    [HideInInspector] public float suctionVelocity;
+    private Rigidbody2D _rigidbody;
     public GameObject clone;
-    public Vector2 enterVector;
+    void Awake()
+    {
+        spriteRenderer = GetComponent<Renderer>();
+        originalLayer = spriteRenderer.sortingLayerID;
+        _rigidbody = GetComponent<Rigidbody2D>();
+    }
 
-    void Start()
+    void FixedUpdate()
     {
-        _originalLayer = gameObject.layer;
-    }
-    void OnTriggerEnter2D(Collider2D other)
-    {
-        if (other.CompareTag("Mask") && gameObject.layer == _originalLayer)
+        if (isTeleporting)
         {
-            // Ubah layerMask supaya bisa tertutupi oleh mask nya saat lagi teleport
-            gameObject.layer = other.gameObject.layer;
-        }
-    }
-    void OnTriggerExit2D(Collider2D other)
-    {
-        if (other.CompareTag("Mask") && gameObject.layer == other.gameObject.layer)
-        {
-            // Kembalikan ke layer aslinya karena sudah tidak perlu ditutupi oleh mask saat tidak teleport
-            gameObject.layer = _originalLayer;
+            Debug.Log(name + " sedang tersedot dengan arah " + teleportDirection.x + " " + teleportDirection.y);
+            // Membuat efek portal menyedot objek
+            Vector2 velocity = _rigidbody.linearVelocity;
+            Vector2 projection = VectorHelper.VectorProjection(velocity, teleportDirection);
+            if (projection.magnitude < suctionVelocity) {
+                // Mengenolkan vektor ke arah masuk/keluar portal
+                velocity -= projection;
+                // Memberi kecepatan untuk masuk/keluar portak
+                velocity += teleportDirection * suctionVelocity;
+                // Kasih ke rigidbody
+                _rigidbody.linearVelocity = velocity;
+            }
         }
     }
 }

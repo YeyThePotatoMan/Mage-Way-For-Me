@@ -43,6 +43,7 @@ public class CharacterController2D : MonoBehaviour
                     OnLandEvent.Invoke();
             }
         }
+        // Debug.Log("Player Speed: " + _rigidbody2D.linearVelocityX);
     }
 
     public void Move(float move)
