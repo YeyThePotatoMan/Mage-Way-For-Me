@@ -13,7 +13,6 @@ class MaskLayerController : MonoBehaviour
         TeleportData otherData = other.gameObject.GetComponent<TeleportData>();
         if (otherData == null) return;
         
-        Debug.Log("Masuk dalam mask");
         // Ubah layerMask supaya bisa tertutupi oleh mask nya saat lagi teleport
         if (otherData.spriteRenderer.sortingLayerID == otherData.originalLayer && otherData.isTeleporting)
         {
@@ -25,7 +24,6 @@ class MaskLayerController : MonoBehaviour
         TeleportData otherData = other.gameObject.GetComponent<TeleportData>();
         if (otherData == null) return;
 
-        Debug.Log("Keluar dari mask");
         // Kembalikan ke layer aslinya karena sudah tidak perlu ditutupi oleh mask saat tidak teleport
         if (otherData.spriteRenderer.sortingLayerID == _maskLayer)
         {

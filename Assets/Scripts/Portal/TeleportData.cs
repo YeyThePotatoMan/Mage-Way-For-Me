@@ -3,7 +3,7 @@ using UnityEngine;
 
 class TeleportData : MonoBehaviour
 {
-    [HideInInspector] public Renderer spriteRenderer;
+    [HideInInspector] public SpriteRenderer spriteRenderer;
     [HideInInspector] public int originalLayer;
     [HideInInspector] public bool isTeleporting = false;
     [HideInInspector] public Vector2 teleportDirection;
@@ -12,20 +12,25 @@ class TeleportData : MonoBehaviour
     public GameObject clone;
     void Awake()
     {
-        spriteRenderer = GetComponent<Renderer>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
         originalLayer = spriteRenderer.sortingLayerID;
         _rigidbody = GetComponent<Rigidbody2D>();
+    }
+
+    void Start()
+    {
+        spriteRenderer.maskInteraction = SpriteMaskInteraction.VisibleOutsideMask;
     }
 
     void FixedUpdate()
     {
         if (isTeleporting)
         {
-            Debug.Log(name + " sedang tersedot dengan arah " + teleportDirection.x + " " + teleportDirection.y);
             // Membuat efek portal menyedot objek
             Vector2 velocity = _rigidbody.linearVelocity;
             Vector2 projection = VectorHelper.VectorProjection(velocity, teleportDirection);
-            if (projection.magnitude < suctionVelocity) {
+            if (projection.magnitude < suctionVelocity || Mathf.Abs(VectorHelper.AngleBetweenTwoVector(projection, teleportDirection)) >= 90)
+            {
                 // Mengenolkan vektor ke arah masuk/keluar portal
                 velocity -= projection;
                 // Memberi kecepatan untuk masuk/keluar portak

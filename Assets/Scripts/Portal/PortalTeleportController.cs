@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using Unity.Collections;
 using UnityEngine;
 
 public class PortalTeleportController : MonoBehaviour
@@ -14,7 +11,6 @@ public class PortalTeleportController : MonoBehaviour
     [HideInInspector] public Vector2 inVector; // Vektor arah masuk keluar
     void Start()
     {
-        Time.timeScale = 0.5f;
         _thisCollider = GetComponent<Collider2D>();
         _otherPortalTransform = otherPortal.GetComponent<Transform>();
         _otherPortalCollider = otherPortal.GetComponent<Collider2D>();
@@ -58,20 +54,7 @@ public class PortalTeleportController : MonoBehaviour
         if (otherData == null || otherData.isTeleporting || otherData.clone != null) return;
         // Tandai lagi di portal, supaya clone di portal lain tidak membuat clone lagi
         otherData.isTeleporting = true;
-
-        Vector2 toCenter = transform.position - other.transform.position;
-
-        // Flip posisi game object tergantung perubahan arah
-        bool flipX = Mathf.Sign(transform.localScale.x) != Mathf.Sign(_otherPortalTransform.localScale.x);
-        bool flipY = Mathf.Sign(transform.localScale.y) != Mathf.Sign(_otherPortalTransform.localScale.y);
-        if (flipX)
-        {
-            toCenter -= 2 * VectorHelper.VectorProjection(toCenter, inVector);
-        }
-        if (flipY)
-        {
-            toCenter -= 2 * VectorHelper.VectorProjection(toCenter, Vector2.Perpendicular(inVector));
-        }
+        other.excludeLayers |= 1 << LayerMask.NameToLayer("Ground");
 
         // Copy gameObjectnya ke portal lain
         otherData.clone = Instantiate(other.gameObject);
@@ -84,7 +67,22 @@ public class PortalTeleportController : MonoBehaviour
         // Supaya clonenya kena masknya portal lain
         cloneData.spriteRenderer.sortingLayerID = otherPortalMask;
 
-        // Rotasikan sesuai arah keluar
+        // Untuk transformasi posisi clone
+        Vector2 toCenter = transform.position - other.transform.position;
+
+        // Flip posisi game object tergantung perubahan arah
+        bool isFlippedX = Mathf.Sign(transform.localScale.x) == Mathf.Sign(_otherPortalTransform.localScale.x);
+        bool isFlippedY = Mathf.Sign(transform.localScale.y) != Mathf.Sign(_otherPortalTransform.localScale.y);
+        if (isFlippedX)
+        {
+            toCenter -= 2 * VectorHelper.VectorProjection(toCenter, inVector);
+        }
+        if (isFlippedY)
+        {
+            toCenter -= 2 * VectorHelper.VectorProjection(toCenter, Vector2.Perpendicular(inVector));
+        }
+
+        // Rotasikan posisi dan rotasi sesuai arah keluar
         float angle = _otherPortalTransform.eulerAngles.z - transform.eulerAngles.z;
         toCenter = VectorHelper.RotateVector(toCenter, angle);
         otherData.clone.transform.rotation = Quaternion.Euler(0, 0, other.transform.eulerAngles.z + angle);
@@ -97,26 +95,22 @@ public class PortalTeleportController : MonoBehaviour
         finalPosition.z = initialZ;
         otherData.clone.transform.position = finalPosition;
 
-        // Samakan kecepatan
-        var originalRigidBody = otherData.gameObject.GetComponent<Rigidbody2D>();
-        var cloneRigidBody = otherData.clone.gameObject.GetComponent<Rigidbody2D>();
-        if (originalRigidBody.linearVelocity.magnitude < _suctionVelocity)
-        {
-            originalRigidBody.linearVelocity = originalRigidBody.linearVelocity.normalized * _suctionVelocity;
-        }
-        cloneRigidBody.linearVelocity = originalRigidBody.linearVelocity;
-        cloneRigidBody.linearVelocity = VectorHelper.RotateVector(cloneRigidBody.linearVelocity, angle);
-        if (flipX)
+        // Atur kecepatan clone sesuai rotasi dan localScale portal tujuan
+        var cloneRigidBody = otherData.clone.GetComponent<Rigidbody2D>();
+        cloneRigidBody.linearVelocity = VectorHelper.RotateVector(cloneRigidBody.linearVelocity, -transform.rotation.eulerAngles.z);
+        if (isFlippedX)
         {
             otherData.clone.transform.localScale *= new Vector2(-1, 1);
-            cloneRigidBody.linearVelocity -= 2 * VectorHelper.VectorProjection(toCenter, cloneRigidBody.linearVelocity);
+            cloneRigidBody.linearVelocity *= new Vector2(-1, 1);
         }
-        if (flipY)
+        if (isFlippedY)
         {
             otherData.clone.transform.localScale *= new Vector2(-1, 1);
-            otherData.clone.transform.rotation = Quaternion.Euler(0, 0, otherData.clone.transform.rotation.eulerAngles.z + 180);
-            cloneRigidBody.linearVelocity -= 2 * VectorHelper.VectorProjection(toCenter, Vector2.Perpendicular(cloneRigidBody.linearVelocity));
+            cloneRigidBody.linearVelocity *= new Vector2(1, -1);
         }
+        otherData.clone.transform.rotation = Quaternion.Euler(0, 0, otherData.clone.transform.rotation.eulerAngles.z + 180);
+
+        cloneRigidBody.linearVelocity = VectorHelper.RotateVector(cloneRigidBody.linearVelocity, _otherPortalTransform.rotation.eulerAngles.z);
 
         // Untuk arah penyedotan oleh portal
         otherData.teleportDirection = -inVector;
@@ -131,15 +125,18 @@ public class PortalTeleportController : MonoBehaviour
 
         // Sudah keluar dari portal
         otherData.isTeleporting = false;
+        other.excludeLayers = 0;
 
         if (otherData.clone == null) return; // Kalo nggak ada clone, sebaiknya jangan dihancurkan, nanti hilang total
         // Kalau arah vektor keluar searah dengan arah vektor masuk, berarti berhasil masuk portal dan pindah
         float exitAngle = VectorHelper.AngleBetweenTwoVector(other.transform.position - transform.position, inVector);
         if (Mathf.Abs(exitAngle) >= 90)
         {
-            Debug.Log("Destroy " + other.name + " with angle: " + exitAngle);
             Destroy(other.gameObject);
         }
-
+        else
+        {
+            Destroy(otherData.clone);
+        }
     }
 }
