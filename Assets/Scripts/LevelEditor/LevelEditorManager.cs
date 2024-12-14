@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using MessagePack;
 using UnityEngine;
 using UnityEngine.Events;
@@ -13,14 +14,30 @@ public class LevelEditorManager : MonoBehaviour
 {
     public struct EditAction
     {
-        public enum ActionType { Tile }
+        public enum ActionType { Tile, Prop }
 
         public ActionType actionType;
-        // The tiles that was placed or deleted. Tuple consists of tilemap index, x, and y.
+        // The tiles and props that were placed or deleted. Tuple consists of tilemap index, x, and y.
         public Dictionary<Tuple<int, int, int>, Tile> pastTiles;
+        public Dictionary<Vector2Int, Level.PropData?> pastProps;
         public Dictionary<Tuple<int, int, int>, Tile> newTiles;
+        public Dictionary<Vector2Int, Level.PropData?> newProps;
     }
     public enum CursorState { Default, Brush, Delete }
+
+    // Placement is a struct to represent either a tile or prop that can be placed in the grid.
+    public struct Placement
+    {
+        public string name;
+        // Sprite of the placement.
+        public Sprite sprite;
+        // The tile of the placement. It's null if the placement is a prop.
+        public Tile tile;
+        // The prefab of the placement. It's null if the placement is a tile.
+        public GameObject propPrefab;
+        // The index of the entity in the entity list. It's -1 if the placement is a tile.
+        public int propIndex;
+    }
 
     // Singleton instance of the LevelEditorManager.
     public static LevelEditorManager Instance { get; private set; }
@@ -29,7 +46,7 @@ public class LevelEditorManager : MonoBehaviour
     public Level level = new()
     {
         name = "New Level",
-        tiles = new string[0],
+        tiles = new(),
         tilemapData = new Dictionary<Tuple<int, int, int>, int>()
     };
     // The history of edit actions.
@@ -50,7 +67,7 @@ public class LevelEditorManager : MonoBehaviour
     public UnityEvent<int> TilemapChangeEvent = new();
 
     // The tile currently selected to be placed.
-    [HideInInspector] public Tile selectedTileToPlace;
+    [HideInInspector] public Placement? selectedPlacementToPlace;
 
     // The ghost tilemap used for previewing the selected tile.
     [Header("Tilemaps")]
@@ -59,14 +76,19 @@ public class LevelEditorManager : MonoBehaviour
     // The array of tilemaps used in the level editor.
     [SerializeField] private Tilemap[] _tilemaps;
 
+    [Header("Prefabs")]
     // The prefab for the tile mask.
     [SerializeField] private GameObject _tileMaskPrefab;
+    // The prefab for the prop placeholder.
+    [SerializeField] private GameObject _propPlaceholderPrefab;
 
     // The grid component used for tile placement.
     private Grid _grid;
 
     // The instance of the tile mask.
     private GameObject _tileMaskInstance;
+    // The instance of the prop placeholder.
+    private GameObject _propPlaceholderInstance;
     // Indicates whether the user is filling tiles.
     private bool _isFilling = false;
     // Indicates whether the user is deleting tiles.
@@ -76,6 +98,8 @@ public class LevelEditorManager : MonoBehaviour
 
     // The path to save user levels.
     private readonly string _userLevelsPath = "UserData/Levels/";
+    // The layer of props in respect to tilemap.
+    private readonly int _propLayer = 0;
 
     private void Awake()
     {
@@ -92,7 +116,7 @@ public class LevelEditorManager : MonoBehaviour
         if (_grid == null) Debug.LogError("Grid not found");
 
         // Temporary load level
-        Load("New Level");
+        // Load("New Level");
     }
 
     private void Update()
@@ -101,42 +125,55 @@ public class LevelEditorManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.S) && Input.GetKey(KeyCode.LeftControl)) Save();
 
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        Vector3Int cellPos = _grid.WorldToCell(mousePos);
+        Vector3Int mouseCellPos = _grid.WorldToCell(mousePos);
 
         // Place tile when selected tile is not null
         _ghostTilemap.ClearAllTiles();
-        int startX = _fillStartCellPos.x > cellPos.x ? cellPos.x : _fillStartCellPos.x;
-        int startY = _fillStartCellPos.y > cellPos.y ? cellPos.y : _fillStartCellPos.y;
-        int endX = _fillStartCellPos.x > cellPos.x ? _fillStartCellPos.x : cellPos.x;
-        int endY = _fillStartCellPos.y > cellPos.y ? _fillStartCellPos.y : cellPos.y;
-        if (selectedTileToPlace != null)
+        int startX = _fillStartCellPos.x > mouseCellPos.x ? mouseCellPos.x : _fillStartCellPos.x;
+        int startY = _fillStartCellPos.y > mouseCellPos.y ? mouseCellPos.y : _fillStartCellPos.y;
+        int endX = _fillStartCellPos.x > mouseCellPos.x ? _fillStartCellPos.x : mouseCellPos.x;
+        int endY = _fillStartCellPos.y > mouseCellPos.y ? _fillStartCellPos.y : mouseCellPos.y;
+        if (selectedPlacementToPlace != null)
         {
-            if (_isFilling)
+            if (selectedPlacementToPlace.Value.tile != null)
             {
-                for (int x = startX; x <= endX; x++)
-                    for (int y = startY; y <= endY; y++)
-                        _ghostTilemap.SetTile(new Vector3Int(x, y, 0), selectedTileToPlace);
-            }
-            else
-            {
-                _ghostTilemap.SetTile(cellPos, selectedTileToPlace);
+                if (_isFilling)
+                {
+                    for (int x = startX; x <= endX; x++)
+                        for (int y = startY; y <= endY; y++)
+                            _ghostTilemap.SetTile(new Vector3Int(x, y, 0), selectedPlacementToPlace.Value.tile);
+                }
+                else
+                {
+                    _ghostTilemap.SetTile(mouseCellPos, selectedPlacementToPlace.Value.tile);
+                }
             }
         }
 
         // Tile placement input controller        
         if (CurrentCursorState == CursorState.Brush || CurrentCursorState == CursorState.Delete)
         {
-            if (selectedTileToPlace != null && !_isDeleting)
+            if (selectedPlacementToPlace != null && !_isDeleting)
             {
-                if (!_isFilling && !UserInterfaceHelper.IsPointerOverUIElement() && Input.GetMouseButtonDown(0))
+                if (selectedPlacementToPlace.Value.tile != null)
                 {
-                    _isFilling = true;
-                    _fillStartCellPos = cellPos;
+                    if (!_isFilling && !UserInterfaceHelper.IsPointerOverUIElement() && Input.GetMouseButtonDown(0))
+                    {
+                        _isFilling = true;
+                        _fillStartCellPos = mouseCellPos;
+                    }
+                    else if (_isFilling && Input.GetMouseButtonUp(0))
+                    {
+                        _isFilling = false;
+                        SetPlacement(selectedPlacementToPlace, 0, _fillStartCellPos, mouseCellPos);
+                    }
                 }
-                else if (_isFilling && Input.GetMouseButtonUp(0))
+                else if (selectedPlacementToPlace.Value.propPrefab != null)
                 {
-                    _isFilling = false;
-                    SetTileRange(selectedTileToPlace, 0, _fillStartCellPos, cellPos);
+                    if (!UserInterfaceHelper.IsPointerOverUIElement() && Input.GetMouseButtonDown(0))
+                    {
+                        SetPlacement(selectedPlacementToPlace, _propLayer, mouseCellPos, mouseCellPos);
+                    }
                 }
             }
             if (!_isFilling)
@@ -145,13 +182,13 @@ public class LevelEditorManager : MonoBehaviour
                 {
                     _isDeleting = true;
                     ChangeCursorState(CursorState.Delete);
-                    _fillStartCellPos = cellPos;
+                    _fillStartCellPos = mouseCellPos;
                 }
                 else if (_isDeleting && Input.GetMouseButtonUp(1))
                 {
                     _isDeleting = false;
                     ChangeCursorState(CursorState.Brush);
-                    SetTileRange(null, 0, _fillStartCellPos, cellPos);
+                    SetPlacement(null, 0, _fillStartCellPos, mouseCellPos);
                 }
             }
         }
@@ -165,30 +202,51 @@ public class LevelEditorManager : MonoBehaviour
         }
 
         // Position tile mask
-        if (selectedTileToPlace != null)
+        if (selectedPlacementToPlace != null)
         {
-            if (_tileMaskInstance == null)
+            if (selectedPlacementToPlace.Value.tile != null)
             {
-                _tileMaskInstance = Instantiate(_tileMaskPrefab, _grid.CellToWorld(cellPos) + _ghostTilemap.tileAnchor, Quaternion.identity);
-                _tileMaskInstance.transform.SetParent(_grid.transform);
-            }
-            else
-            {
-                if (_isFilling)
+                if (_tileMaskInstance == null)
                 {
-                    _tileMaskInstance.transform.localScale = new Vector3(endX - startX + 1, endY - startY + 1, 1);
-                    _tileMaskInstance.transform.position = _grid.CellToWorld(new Vector3Int(startX, startY, 0))
-                        + _ghostTilemap.tileAnchor
-                        + new Vector3((endX - startX) / 2f, (endY - startY) / 2f, 0);
+                    _tileMaskInstance = Instantiate(_tileMaskPrefab, _grid.CellToWorld(mouseCellPos) + _ghostTilemap.tileAnchor, Quaternion.identity);
+                    _tileMaskInstance.transform.SetParent(_grid.transform);
                 }
                 else
                 {
-                    _tileMaskInstance.transform.localScale = Vector3.one;
-                    _tileMaskInstance.transform.position = _grid.CellToWorld(cellPos) + _ghostTilemap.tileAnchor;
+                    if (_isFilling)
+                    {
+                        _tileMaskInstance.transform.localScale = new Vector3(endX - startX + 1, endY - startY + 1, 1);
+                        _tileMaskInstance.transform.position = _grid.CellToWorld(new Vector3Int(startX, startY, 0))
+                            + _ghostTilemap.tileAnchor
+                            + new Vector3((endX - startX) / 2f, (endY - startY) / 2f, 0);
+                    }
+                    else
+                    {
+                        _tileMaskInstance.transform.localScale = Vector3.one;
+                        _tileMaskInstance.transform.position = _grid.CellToWorld(mouseCellPos) + _ghostTilemap.tileAnchor;
+                    }
+                }
+            }
+            else
+            {
+                if (_propPlaceholderInstance == null)
+                {
+                    _propPlaceholderInstance = Instantiate(_propPlaceholderPrefab, _grid.CellToWorld(mouseCellPos), Quaternion.identity);
+                    _propPlaceholderInstance.GetComponent<SpriteRenderer>().sprite = selectedPlacementToPlace.Value.sprite;
+                    _propPlaceholderInstance.transform.SetParent(_grid.transform);
+                }
+                else
+                {
+                    _propPlaceholderInstance.transform.position = _grid.CellToWorld(mouseCellPos);
                 }
             }
         }
-        else if (_tileMaskInstance != null) Destroy(_tileMaskInstance);
+        else
+        {
+            // Cleanup instances
+            if (_tileMaskInstance != null) Destroy(_tileMaskInstance);
+            if (_propPlaceholderInstance != null) Destroy(_propPlaceholderInstance);
+        }
     }
 
     /// <summary>
@@ -216,7 +274,7 @@ public class LevelEditorManager : MonoBehaviour
                 }
             }
         }
-        level.tiles = tiles.ToArray();
+        level.tiles = tiles;
 
         // Serialize to message pack and save to file
         byte[] bytes = MessagePackSerializer.Serialize(level);
@@ -234,17 +292,31 @@ public class LevelEditorManager : MonoBehaviour
         byte[] bytes = File.ReadAllBytes(Path.Join(_userLevelsPath, $"{leveLFileToLoad}.level"));
         level = MessagePackSerializer.Deserialize<Level>(bytes);
 
+        // Load resources
+        level.tileResources = level.tiles.Select(item => Resources.Load<Tile>(item)).ToList();
+        level.propResources = level.props.Select(item => Resources.Load<GameObject>(item)).ToList();
+
         // Clear tilemaps
         foreach (var tilemap in _tilemaps) tilemap.ClearAllTiles();
 
         // Load tilemap data
         foreach (var tile in level.tilemapData)
         {
-            if (_tilemaps.Length <= tile.Key.Item1 || level.tiles.Length <= tile.Value) continue;
+            if (_tilemaps.Length <= tile.Key.Item1 || level.tiles.Count <= tile.Value) continue;
             _tilemaps[tile.Key.Item1].SetTile(
                 new Vector3Int(tile.Key.Item2, tile.Key.Item3, 0),
-                Resources.Load<Tile>($"Tiles/{level.tiles[tile.Value]}")
+                level.tileResources[tile.Key.Item2]
             );
+        }
+
+        // Load prop data
+        foreach (var prop in level.propData)
+        {
+            GameObject instantiatedProp = Instantiate(
+                level.propResources[prop.Value.propIndex],
+                _grid.CellToWorld(new Vector3Int(prop.Key.x, prop.Key.y, 0)),
+                Quaternion.identity);
+            level.propInstances[prop.Key] = instantiatedProp;
         }
     }
 
@@ -252,16 +324,16 @@ public class LevelEditorManager : MonoBehaviour
     /// <summary>
     /// Sets a tile at the specified range in the specified tilemap.
     /// </summary>
-    /// <param name="tile">The tile to set.</param>
-    /// <param name="tilemapIndex">The index of the tilemap.</param>
+    /// <param name="placement">The placement to be set.</param>
+    /// <param name="tilemapIndex">The index of the tilemap. When placement is a prop, it should be equal to _propLayer.</param>
     /// <param name="startPosition">The start position to set the tile.</param>
     /// <param name="endPosition">The end position to set the tile.</param>
-    public void SetTileRange(Tile tile, int tilemapIndex, Vector3Int startPosition, Vector3Int endPosition)
+    public void SetPlacement(Placement? placement, int tilemapIndex, Vector3Int startPosition, Vector3Int endPosition)
     {
         // Add edit action to history
         EditAction editAction = new()
         {
-            actionType = EditAction.ActionType.Tile,
+            actionType = placement?.tile ? EditAction.ActionType.Tile : EditAction.ActionType.Prop,
             pastTiles = new(),
             newTiles = new()
         };
@@ -271,19 +343,56 @@ public class LevelEditorManager : MonoBehaviour
         if (startPosition.y > endPosition.y) (endPosition.y, startPosition.y) = (startPosition.y, endPosition.y);
 
         for (int x = startPosition.x; x <= endPosition.x; x++)
+        {
             for (int y = startPosition.y; y <= endPosition.y; y++)
             {
-                // Store the past tile
+                // Store the past tile or prop
                 Tile pastTile = _tilemaps[tilemapIndex].GetTile<Tile>(new Vector3Int(x, y, 0));
-                editAction.pastTiles.Add(new Tuple<int, int, int>(tilemapIndex, x, y), pastTile);
+                if (pastTile != null) editAction.pastTiles.Add(new Tuple<int, int, int>(tilemapIndex, x, y), pastTile);
+                Level.PropData? pastProp = tilemapIndex == _propLayer && level.propData.ContainsKey(new Vector2Int(x, y)) ? level.propData[new Vector2Int(x, y)] : null;
+                if (pastProp != null) editAction.pastProps.Add(new Vector2Int(x, y), pastProp.Value);
 
-                if (pastTile != tile)
+                // If placement changes, set the new tile or prop
+                if (placement?.tile != null && pastTile != placement?.tile)
                 {
                     didSomethingChanged = true;
-                    _tilemaps[tilemapIndex].SetTile(new Vector3Int(x, y, 0), tile);
+                    _tilemaps[tilemapIndex].SetTile(new Vector3Int(x, y, 0), placement?.tile);
+                    editAction.newTiles.Add(new Tuple<int, int, int>(tilemapIndex, x, y), placement?.tile);
                 }
-                editAction.newTiles.Add(new Tuple<int, int, int>(tilemapIndex, x, y), tile);
+                else if (placement?.propPrefab != null)
+                {
+                    if (pastProp?.propIndex != placement?.propIndex)
+                    {
+                        didSomethingChanged = true;
+                        GameObject instantiatedProp = Instantiate(placement?.propPrefab, _grid.CellToWorld(new Vector3Int(x, y, 0)), Quaternion.identity);
+                        level.propData[new Vector2Int(x, y)] = new Level.PropData
+                        {
+                            name = placement?.name,
+                            propIndex = placement?.propIndex ?? -1,
+                            parameters = new string[0],
+                        };
+                        Vector2Int key = new(x, y);
+                        level.propInstances[key] = instantiatedProp;
+                        editAction.newProps.Add(key, level.propData[new Vector2Int(x, y)]);
+                    }
+                }
+                else if (placement == null)
+                {
+                    if (pastTile != null)
+                    {
+                        didSomethingChanged = true;
+                        _tilemaps[tilemapIndex].SetTile(new Vector3Int(x, y, 0), null);
+                        editAction.newTiles.Add(new Tuple<int, int, int>(tilemapIndex, x, y), null);
+                    }
+                    else if (pastProp != null)
+                    {
+                        didSomethingChanged = true;
+                        level.propData.Remove(new Vector2Int(x, y));
+                        editAction.newProps.Add(new Vector2Int(x, y), null);
+                    }
+                }
             }
+        }
 
         if (didSomethingChanged) RecordEdit(editAction);
     }
@@ -331,15 +440,22 @@ public class LevelEditorManager : MonoBehaviour
         EditAction editAction = editHistory.Pop();
         redoHistory.Push(editAction);
 
-        switch (editAction.actionType)
+        foreach (var tile in editAction.pastTiles)
+            _tilemaps[tile.Key.Item1].SetTile(new Vector3Int(tile.Key.Item2, tile.Key.Item3, 0), tile.Value);
+        foreach (var prop in editAction.pastProps)
         {
-            case EditAction.ActionType.Tile:
-                foreach (var tile in editAction.pastTiles)
-                    _tilemaps[tile.Key.Item1].SetTile(new Vector3Int(tile.Key.Item2, tile.Key.Item3, 0), tile.Value);
-                break;
-            default:
-                Debug.LogError("Invalid edit action type");
-                break;
+            if (prop.Value == null)
+            {
+                Destroy(level.propInstances.ContainsKey(prop.Key) ? level.propInstances[prop.Key] : null);
+                level.propData.Remove(prop.Key);
+            }
+            else
+            {
+                if (level.propInstances.ContainsKey(prop.Key)) Destroy(level.propInstances[prop.Key]);
+                GameObject instantiatedProp = Instantiate(level.propResources[prop.Value.Value.propIndex], _grid.CellToWorld(new Vector3Int(prop.Key.x, prop.Key.y, 0)), Quaternion.identity);
+                level.propInstances[prop.Key] = instantiatedProp;
+                level.propData[prop.Key] = prop.Value.Value;
+            }
         }
 
         EditEvent.Invoke();
@@ -355,15 +471,22 @@ public class LevelEditorManager : MonoBehaviour
         EditAction editAction = redoHistory.Pop();
         editHistory.Push(editAction);
 
-        switch (editAction.actionType)
+        foreach (var tile in editAction.newTiles)
+            _tilemaps[tile.Key.Item1].SetTile(new Vector3Int(tile.Key.Item2, tile.Key.Item3, 0), tile.Value);
+        foreach (var prop in editAction.newProps)
         {
-            case EditAction.ActionType.Tile:
-                foreach (var tile in editAction.newTiles)
-                    _tilemaps[tile.Key.Item1].SetTile(new Vector3Int(tile.Key.Item2, tile.Key.Item3, 0), tile.Value);
-                break;
-            default:
-                Debug.LogError("Invalid edit action type");
-                break;
+            if (prop.Value == null)
+            {
+                Destroy(level.propInstances.ContainsKey(prop.Key) ? level.propInstances[prop.Key] : null);
+                level.propData.Remove(prop.Key);
+            }
+            else
+            {
+                if (level.propInstances.ContainsKey(prop.Key)) Destroy(level.propInstances[prop.Key]);
+                GameObject instantiatedProp = Instantiate(level.propResources[prop.Value.Value.propIndex], _grid.CellToWorld(new Vector3Int(prop.Key.x, prop.Key.y, 0)), Quaternion.identity);
+                level.propInstances[prop.Key] = instantiatedProp;
+                level.propData[prop.Key] = prop.Value.Value;
+            }
         }
 
         EditEvent.Invoke();
