@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 3
   tags:
   - Ground
+  - Clone Destroyer
+  - Mask
   layers:
   - Default
   - TransparentFX
@@ -12,8 +14,8 @@ TagManager:
   - Player
   - Water
   - UI
-  - 
-  - 
+  - Ground
+  - Portal
   - 
   - 
   - 
@@ -41,6 +43,18 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Portal 1
+    uniqueID: 4174032101
+    locked: 0
+  - name: Portal 2
+    uniqueID: 3375793707
+    locked: 0
+  - name: Portal 3
+    uniqueID: 702725969
+    locked: 0
+  - name: Portal 4
+    uniqueID: 3779235689
     locked: 0
   m_RenderingLayers:
   - Default
