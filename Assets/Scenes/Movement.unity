@@ -702,13 +702,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd83e9df9b7a69948ac023683591eeea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_JumpForce: 400
-  m_MovementSmoothing: 0.05
-  m_AirControl: 1
-  m_WhatIsGround:
+  _JumpForce: 400
+  _MovementSmoothing: 0.05
+  _AirControl: 1
+  _WhatIsGround:
     serializedVersion: 2
     m_Bits: 55
-  m_GroundCheck: {fileID: 1077867616}
+  _GroundCheck: {fileID: 1077867616}
   OnLandEvent:
     m_PersistentCalls:
       m_Calls: []
