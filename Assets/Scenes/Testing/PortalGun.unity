@@ -461,10 +461,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 1650684559}
-  mousePos: {x: 0, y: 0, z: 0}
-  mousePosRelative: {x: 0, y: 0, z: 0}
-  portalGunPos: {x: 0, y: 0, z: 0}
-  portalGunRotation: 0
 --- !u!114 &1956305663
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -477,8 +473,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8352139384f89c4a98890847d99f93c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  firePoint: {fileID: 0}
-  projectile: {fileID: 0}
+  _projectilePrefab: {fileID: 3351329691042210146, guid: aac7ec75be21bb147919fbe88846c663, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
