@@ -1,8 +1,13 @@
 using UnityEngine;
 
+/// <summary>
+/// Behaviour of the gun movement, following the player's mouse position.
+/// </summary>
 public class GunMovement : MonoBehaviour
 {
+    [Tooltip("Player transform to follow.")]
     public Transform player;
+
     private Vector3 mousePos;
     private Vector3 mousePosRelative;
     private Vector3 portalGunPos;
