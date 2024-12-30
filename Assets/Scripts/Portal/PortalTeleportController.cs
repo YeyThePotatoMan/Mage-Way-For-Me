@@ -54,7 +54,6 @@ public class PortalTeleportController : MonoBehaviour
         if (otherData == null || otherData.isTeleporting || otherData.clone != null) return;
         // Tandai lagi di portal, supaya clone di portal lain tidak membuat clone lagi
         otherData.isTeleporting = true;
-        other.excludeLayers |= 1 << LayerMask.NameToLayer("Ground");
 
         // Copy gameObjectnya ke portal lain
         otherData.clone = Instantiate(other.gameObject);
@@ -125,7 +124,6 @@ public class PortalTeleportController : MonoBehaviour
 
         // Sudah keluar dari portal
         otherData.isTeleporting = false;
-        other.excludeLayers = 0;
 
         if (otherData.clone == null) return; // Kalo nggak ada clone, sebaiknya jangan dihancurkan, nanti hilang total
         // Kalau arah vektor keluar searah dengan arah vektor masuk, berarti berhasil masuk portal dan pindah
