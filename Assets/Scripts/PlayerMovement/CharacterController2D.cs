@@ -74,6 +74,10 @@ public class CharacterController2D : MonoBehaviour
         if (_grounded)
         {
             _grounded = false;
+            // Reset kecepatan vertikal kalo sedang turun
+            if (_rigidbody2D.linearVelocityY < 0) {
+                _rigidbody2D.linearVelocityY = 0;
+            }
             _rigidbody2D.AddForce(new Vector2(0f, _jumpForce));
 
             return true; // Berhasil lompat
