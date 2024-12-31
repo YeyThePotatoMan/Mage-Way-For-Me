@@ -4,7 +4,16 @@ public class PortalTeleportController : MonoBehaviour
 {
     [SerializeField] private float _suctionVelocity = 10f; // Kecepatan benda saat masuk/keluar portal supaya tidak sengaja clone 2x
     private Collider2D _thisCollider; // Collider portal ini
-    public PortalTeleportController otherPortal; // Portal lain sebagai tujuan teleport
+    [HideInInspector] public PortalTeleportController otherPortal;
+    public PortalTeleportController OtherPortal {
+        get {return otherPortal; }
+        set {
+            otherPortal = value;
+            _otherPortalTransform = value.GetComponent<Transform>();
+            _otherPortalCollider = value.GetComponent<Collider2D>();
+            otherPortalMask = value.GetComponentInChildren<SpriteMask>().frontSortingLayerID;
+        }
+    } // Portal lain sebagai tujuan teleport
     [HideInInspector] public LayerMask otherPortalMask; // Layer mask dari portal lain
     private Transform _otherPortalTransform; // Transform portal lain
     private Collider2D _otherPortalCollider; // Collider portal lain
@@ -12,9 +21,11 @@ public class PortalTeleportController : MonoBehaviour
     void Start()
     {
         _thisCollider = GetComponent<Collider2D>();
-        _otherPortalTransform = otherPortal.GetComponent<Transform>();
-        _otherPortalCollider = otherPortal.GetComponent<Collider2D>();
-        otherPortalMask = otherPortal.GetComponentInChildren<SpriteMask>().frontSortingLayerID;
+        if (otherPortal != null) {
+            _otherPortalTransform = otherPortal.GetComponent<Transform>();
+            _otherPortalCollider = otherPortal.GetComponent<Collider2D>();
+            otherPortalMask = otherPortal.GetComponentInChildren<SpriteMask>().frontSortingLayerID;
+        }
 
         UpdateInVector();
         Debug.Log(name + " inVector: " + inVector.x + " " + inVector.y);
@@ -57,7 +68,7 @@ public class PortalTeleportController : MonoBehaviour
         other.excludeLayers |= 1 << LayerMask.NameToLayer("Ground");
 
         // Copy gameObjectnya ke portal lain
-        otherData.clone = Instantiate(other.gameObject);
+        otherData.clone = CloneHelper.Clone(other.gameObject);
         otherData.clone.name = otherData.name; // Biar nama clonenya nggak kepanjangan
 
         // Clonenya clone dari diri sendiri adalah diri sendiri

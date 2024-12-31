@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -14,6 +15,10 @@ class PortalProjectileBehaviour : MonoBehaviour
   public float lifetimeDuration = 5f;
   [Tooltip("Layer mask of solid objects the projectile should land on.")]
   public LayerMask solidLayer;
+  
+  [CloneReference]
+  [HideInInspector]
+  public Action<GameObject> onTrigger;
 
   private Rigidbody2D _rigidbody;
 
@@ -27,13 +32,10 @@ class PortalProjectileBehaviour : MonoBehaviour
   }
 
   // When the projectile collides with a solid object, trigger it.
-  private void OnCollisionEnter2D(Collision2D collision)
+  private void OnCollisionEnter2D(Collision2D coll)
   {
-    if (collision.gameObject.layer == solidLayer)
-    {
-      Trigger();
-    }
-  }
+    if (((1 << coll.gameObject.layer) & solidLayer) != 0) Trigger();
+  }  
 
   // When the projectile doesn't land on anything after the lifetime duration, trigger it.
   private IEnumerator StartLifetime()
@@ -43,7 +45,8 @@ class PortalProjectileBehaviour : MonoBehaviour
   }
 
   private void Trigger()
-  {
+  {        
+    onTrigger?.Invoke(gameObject);
     Destroy(gameObject);
   }
 }

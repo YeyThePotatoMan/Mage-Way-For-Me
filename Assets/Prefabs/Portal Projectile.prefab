@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 738262696362007483}
   - component: {fileID: 7101049224083768478}
   - component: {fileID: -3836240656317889531}
+  - component: {fileID: 8004154429004557941}
   m_Layer: 0
   m_Name: Portal Projectile
   m_TagString: Untagged
@@ -147,7 +148,7 @@ CircleCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
@@ -169,4 +170,22 @@ MonoBehaviour:
   lifetimeDuration: 5
   solidLayer:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 64
+--- !u!114 &8004154429004557941
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3351329691042210146}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89e138c20f77c4a979dfa11bf8986754, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spriteRenderer: {fileID: 0}
+  originalLayer: 0
+  isTeleporting: 0
+  teleportDirection: {x: 0, y: 0}
+  suctionVelocity: 0
+  clone: {fileID: 0}
