@@ -17,7 +17,6 @@ public class PortalTeleportController : MonoBehaviour
         otherPortalMask = otherPortal.GetComponentInChildren<SpriteMask>().frontSortingLayerID;
 
         UpdateInVector();
-        Debug.Log(name + " inVector: " + inVector.x + " " + inVector.y);
     }
     public void SetColliderActive(bool active)
     {
