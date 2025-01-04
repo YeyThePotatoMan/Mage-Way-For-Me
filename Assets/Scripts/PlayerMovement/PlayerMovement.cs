@@ -7,9 +7,20 @@ public class PlayerMovement : MonoBehaviour
     private float _horizontalMove = 0f;
     [SerializeField] private float _jumpBufferTime = 0.2f;
     private float _jumpBufferCounter;
+    private bool _active = true;
+    private Collider2D _playercollider;
 
+    void Start()
+    {
+        _playercollider = GetComponent<Collider2D>();
+    }
     void Update()
     {
+        if(!_active)
+        {
+            return;
+        }
+
         _horizontalMove = Input.GetAxisRaw("Horizontal") * runSpeed;
         if (Input.GetButtonDown("Jump"))
         {
@@ -33,5 +44,11 @@ public class PlayerMovement : MonoBehaviour
                 _jumpBufferCounter = 0f; // Hilangkan buffer input
             }
         }
+    }
+
+    public void Die()
+    {
+        _active = false;
+        _playercollider.enabled = false;
     }
 }
