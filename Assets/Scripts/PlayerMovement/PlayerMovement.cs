@@ -1,5 +1,8 @@
+using System.Collections;
 using System.ComponentModel.Design;
+using System.Numerics;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -11,6 +14,8 @@ public class PlayerMovement : MonoBehaviour
     private bool _active = true;
     private BoxCollider2D _playerCollider;
     private Rigidbody2D _playerRigidbody;
+    private float _rotationSpeed = 180f;
+    public float restartTime = 1.5f; // Waktu untuk delay reload scene ketika mati
     void Start()
     {
         _playerCollider = GetComponent<BoxCollider2D>();
@@ -48,13 +53,33 @@ public class PlayerMovement : MonoBehaviour
     }
     public void Die()
     {
+        var _playerRotationController = GetComponent<PlayerRotationController>();
+        var _animator = GetComponent<Animator>();
+        _playerRotationController.enabled = false;
+        _animator.enabled = false;
+
         _active = false;
         _playerCollider.enabled = false;
+        _playerRigidbody.freezeRotation = false;
+        float _impulse = _rotationSpeed * Mathf.Deg2Rad;
+
+
         if(_playerRigidbody.linearVelocityX < 0f){
-            _playerRigidbody.AddForce(new Vector2(100f, 200f));
+            _playerRigidbody.AddForce(new UnityEngine.Vector2(100f, 200f));
+            // _playerRigidbody.AddTorque(_impulse, ForceMode2D.Impulse);
+            _playerRigidbody.angularVelocity = -_rotationSpeed;
         }
         else{
-            _playerRigidbody.AddForce(new Vector2(-100f, 200f));
+            _playerRigidbody.AddForce(new UnityEngine.Vector2(-100f, 200f));
+            // _playerRigidbody.AddTorque(_impulse, ForceMode2D.Impulse);
+            _playerRigidbody.angularVelocity = _rotationSpeed;
         }
+        StartCoroutine(Delay(restartTime));
+    }
+
+    IEnumerator Delay(float seconds) {
+        yield return new WaitForSeconds(seconds);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }
+
