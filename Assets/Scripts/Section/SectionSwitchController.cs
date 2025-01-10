@@ -1,12 +1,11 @@
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 
 class SectionSwitchController : MonoBehaviour
 {
-    public Camera sectionCamera;
-    public SectionSwitchController otherSection;
-    [HideInInspector] public bool canSwitch = true; // Bisa ganti ruangan
+    public Camera sectionCamera; // Kamera yang dipake di ruangan ini
+    public SectionSwitchController otherSectionDoor; // Pintu di ruangan lain
+    [HideInInspector] public bool canSwitch = true; // Bisa ganti ruangan atau tidak
     private bool _toggleOnExit = false;
     void OnTriggerEnter2D(Collider2D other)
     {
@@ -18,16 +17,16 @@ class SectionSwitchController : MonoBehaviour
             return;
         }
         sectionCamera.enabled = false;
-        otherSection.sectionCamera.enabled = true;
+        otherSectionDoor.sectionCamera.enabled = true;
 
         // Tidak boleh langsung ganti ruangan, ini dilakukan supaya OnTriggerEnter2D tidak langsung ke-trigger
         canSwitch = false;
         StartCoroutine(CanSwitchDelay());
-        otherSection.canSwitch = false;
-        StartCoroutine(otherSection.CanSwitchDelay());
+        otherSectionDoor.canSwitch = false;
+        StartCoroutine(otherSectionDoor.CanSwitchDelay());
 
         Vector3 initialPosition = other.transform.position; // Posisi awal player
-        Vector3 deltaPosition = otherSection.transform.position - transform.position; // Perubahan posisi
+        Vector3 deltaPosition = otherSectionDoor.transform.position - transform.position; // Perubahan posisi
         deltaPosition.z = 0; // Posisi z jangan diubah
         other.transform.position = initialPosition + deltaPosition; // Pindah posisi
     }
