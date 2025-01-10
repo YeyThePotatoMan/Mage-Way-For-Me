@@ -6,13 +6,13 @@ public class InteractableToggle : MonoBehaviour
     public UnityEvent onActivate; // Event triggered when the interaction occurs
     public UnityEvent onDeactivate; // Optional
 
-    private bool isActivated = false;
+    private bool _isActivated = false;
 
     public void Toggle()
     {
-        isActivated = !isActivated;
+        _isActivated = !_isActivated;
 
-        if (isActivated)
+        if (_isActivated)
         {
             onActivate.Invoke();
         }
