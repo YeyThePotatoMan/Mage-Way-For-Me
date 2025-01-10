@@ -12,7 +12,7 @@ public class CloneHelper : MonoBehaviour
   /// <returns>Cloned GameObject.</returns>
   public static GameObject Clone(GameObject original)
   {
-    // Insatantiate the original GameObject.
+    // Instantiate the original GameObject.
     GameObject clone = Instantiate(original);
 
     // Iterate all components and fields of the clone.

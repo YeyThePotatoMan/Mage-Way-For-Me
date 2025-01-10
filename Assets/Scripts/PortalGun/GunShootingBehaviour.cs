@@ -46,14 +46,14 @@ public class GunShootingBehaviour : MonoBehaviour
     private void Update()
     {
         // If the player clicks and the cooldown is over, shoot a projectile
-        if ((Input.GetMouseButtonDown(0) | Input.GetMouseButtonDown(1)) && Time.unscaledTime - _lastShotTime >= cooldownDuration)
+        if ((Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1)) && Time.unscaledTime - _lastShotTime >= cooldownDuration)
         {
             GameObject projectile = Instantiate(_projectilePrefab, transform.position, transform.rotation);
             PortalProjectileBehaviour portalProjectileBehaviour = projectile.GetComponent<PortalProjectileBehaviour>();
 
             portalProjectileBehaviour.onTrigger = CreateProjectileTriggerAction(
-                (_isSecondSet ? 2 : 0) +
-                (Input.GetMouseButtonDown(0) ? 0 : 1)
+                (_isSecondSet ? 2 : 0) +                // Pick between sets, 1st set is [0, 1] and 2nd set is [2, 3]
+                (Input.GetMouseButtonDown(0) ? 0 : 1)   // Pick which portal of the pair, 1st portal is even and 2nd portal is odd
             );
 
             _lastShotTime = Time.unscaledTime;

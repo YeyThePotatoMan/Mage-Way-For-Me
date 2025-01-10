@@ -210,6 +210,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cooldownDuration: 0.5
   portalLength: 20
+  portalWidth: 2
   _projectilePrefab: {fileID: 3351329691042210146, guid: aac7ec75be21bb147919fbe88846c663, type: 3}
   _portalPrefabs:
   - {fileID: 8081415141607759584, guid: 5e54c984303970d47a35d7eb3c673f69, type: 3}
@@ -218,7 +219,7 @@ MonoBehaviour:
   - {fileID: 9156102008789190675, guid: 50241aa8d33670745820c2b19728fd52, type: 3}
   _solidLayer:
     serializedVersion: 2
-    m_Bits: 192
+    m_Bits: 448
 --- !u!114 &5375564913798934719
 MonoBehaviour:
   m_ObjectHideFlags: 0
