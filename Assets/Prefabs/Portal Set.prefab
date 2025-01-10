@@ -729,32 +729,9 @@ Transform:
   - {fileID: 3675159177866960727}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &2516205154316930395
-GameObject:
+--- !u!1001 &1430795502356980167
+PrefabInstance:
   m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 7846743146067119933}
-  - component: {fileID: 3586734535944068344}
-  - component: {fileID: 6622758519779723695}
-  - component: {fileID: 7551312682909057693}
-  m_Layer: 0
-  m_Name: Mask
-  m_TagString: Mask
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &7846743146067119933
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2516205154316930395}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 2, y: 0, z: 0}
@@ -1713,11 +1690,10 @@ BoxCollider2D:
   m_EdgeRadius: 0
 --- !u!114 &6162664918097247759
 MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 6503048207781185300, guid: 5e54c984303970d47a35d7eb3c673f69, type: 3}
+  m_PrefabInstance: {fileID: 7568985195247030016}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6042997026897672721}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fcf75a1c1f8f34c2fa49b8e90b6d4a76, type: 3}
@@ -1761,9 +1737,8 @@ GameObject:
   m_IsActive: 1
 --- !u!4 &6138423388369638982
 Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 6867931392395435303, guid: 5e54c984303970d47a35d7eb3c673f69, type: 3}
+  m_PrefabInstance: {fileID: 7568985195247030016}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6741804477675820681}
   serializedVersion: 2
@@ -2122,39 +2097,19 @@ BoxCollider2D:
   m_EdgeRadius: 0
 --- !u!114 &287560352926680801
 MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 4757188434582351997, guid: f320fb32a99403247acba9b2c29930cb, type: 3}
+  m_PrefabInstance: {fileID: 8861275579227097248}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7263661465838561105}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dcc162f42fccb4dd68c5b7d92c983e01, type: 3}
+  m_Script: {fileID: 11500000, guid: fcf75a1c1f8f34c2fa49b8e90b6d4a76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1 &7502478477976928792
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2142173831261755060}
-  - component: {fileID: 7654595401744944747}
-  - component: {fileID: 402648992151405072}
-  m_Layer: 7
-  m_Name: Kepala
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2142173831261755060
+--- !u!4 &8064271418729614107 stripped
 Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 1518732397688521659, guid: f320fb32a99403247acba9b2c29930cb, type: 3}
+  m_PrefabInstance: {fileID: 8861275579227097248}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7502478477976928792}
   serializedVersion: 2
@@ -2671,39 +2626,19 @@ BoxCollider2D:
   m_EdgeRadius: 0
 --- !u!114 &1709004995157538039
 MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 8957280867089087529, guid: 50241aa8d33670745820c2b19728fd52, type: 3}
+  m_PrefabInstance: {fileID: 9086855041219104857}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8968741725038248975}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dcc162f42fccb4dd68c5b7d92c983e01, type: 3}
+  m_Script: {fileID: 11500000, guid: fcf75a1c1f8f34c2fa49b8e90b6d4a76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1 &9083702743282281384
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 4561912357105169075}
-  - component: {fileID: 7306041917529143493}
-  - component: {fileID: 9088812767231194131}
-  m_Layer: 7
-  m_Name: Kaki
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &4561912357105169075
+--- !u!4 &3675159177866960727 stripped
 Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 5555813876459884302, guid: 50241aa8d33670745820c2b19728fd52, type: 3}
+  m_PrefabInstance: {fileID: 9086855041219104857}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9083702743282281384}
   serializedVersion: 2
