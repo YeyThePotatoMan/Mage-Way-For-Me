@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Mage Way For Me.sln"
+    "dotnet.defaultSolution": "Mage-Way-For-Me.sln"
 }
