@@ -15,6 +15,8 @@ class PortalProjectileBehaviour : MonoBehaviour
   public float lifetimeDuration = 5f;
   [Tooltip("Layer mask of solid objects the projectile should land on.")]
   public LayerMask solidLayer;
+  [Tooltip("Layer mask of objects that portals can't stick on.")]
+  public LayerMask unstickableLayer;
   
   [CloneReference]
   [HideInInspector]
@@ -31,17 +33,18 @@ class PortalProjectileBehaviour : MonoBehaviour
     StartCoroutine(StartLifetime());
   }
 
-  // When the projectile collides with a solid object, trigger it.
+  // When the projectile collides with a solid object and is not an unstickable object, trigger it.
   private void OnCollisionEnter2D(Collision2D coll)
   {
-    if (((1 << coll.gameObject.layer) & solidLayer) != 0) Trigger();
+    if (((1 << coll.gameObject.layer) & unstickableLayer) != 0) Destroy(gameObject);
+    else if (((1 << coll.gameObject.layer) & solidLayer) != 0) Trigger();
   }  
 
-  // When the projectile doesn't land on anything after the lifetime duration, trigger it.
+  // When the projectile doesn't land on anything after the lifetime duration, destroy it.
   private IEnumerator StartLifetime()
   {
     yield return new WaitForSeconds(lifetimeDuration);
-    Trigger();
+    Destroy(gameObject);
   }
 
   private void Trigger()
