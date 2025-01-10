@@ -94,10 +94,11 @@ GameObject:
   - component: {fileID: 124771289940957663}
   - component: {fileID: 8211046059806104012}
   - component: {fileID: 7955108612550204184}
+  - component: {fileID: 4542887681402688618}
   - component: {fileID: 5153244869569117036}
   m_Layer: 3
   m_Name: Mage
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -316,6 +317,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rotateDuration: 0.2
   rotationDelay: 0.2
+--- !u!114 &4542887681402688618
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5613996313789553626}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b2c353d4c782464b96b30e9ce2a66db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spawnAnimator: {fileID: 5153244869569117036}
 --- !u!95 &5153244869569117036
 Animator:
   serializedVersion: 7
@@ -422,6 +436,6 @@ SpriteRenderer:
   m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
