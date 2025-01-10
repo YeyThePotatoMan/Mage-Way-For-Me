@@ -4,10 +4,10 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-public class SettingsManager : MonoBehaviour
+public class SettingsManager : MonoBehaviour // Handles saving and loading settings using PlayerPrefs and updating UI sliders in the scene. Sliders' name must match keys in FloatSettings
 {
 
-    // Handles saving and loading settings using PlayerPrefs and updating UI sliders in the scene.
+    
     public static SettingsManager Instance { get; private set; }
 
     [Header("UI Elements")]

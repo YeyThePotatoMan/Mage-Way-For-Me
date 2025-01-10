@@ -19,11 +19,6 @@ public class SettingsMenu : MonoBehaviour
             masterSlider.value = masterVolume;
             myMixer.SetFloat("master", Mathf.Log10(masterVolume) * 20);
             masterSlider.onValueChanged.AddListener(delegate { SetMasterVolume(); });
-            Debug.Log($"Master volume initialized to: {masterVolume}");
-        }
-        else
-        {
-            Debug.LogError("MasterSlider or AudioMixer is not assigned in the Inspector!");
         }
         
         // Initialize music volume slider
@@ -33,11 +28,6 @@ public class SettingsMenu : MonoBehaviour
             musicSlider.value = musicVolume;
             myMixer.SetFloat("music", Mathf.Log10(musicVolume) * 20);
             musicSlider.onValueChanged.AddListener(delegate { SetMusicVolume(); });
-            Debug.Log($"Music volume initialized to: {musicVolume}");
-        }
-        else
-        {
-            Debug.LogError("MusicSlider or AudioMixer is not assigned in the Inspector!");
         }
 
         // Initialize SFX volume slider
@@ -48,10 +38,6 @@ public class SettingsMenu : MonoBehaviour
             myMixer.SetFloat("sfx", Mathf.Log10(sfxVolume) * 20);
             sfxSlider.onValueChanged.AddListener(delegate { SetSFXVolume(); });
             Debug.Log($"SFX volume initialized to: {sfxVolume}");
-        }
-        else
-        {
-            Debug.LogError("SFXSlider or AudioMixer is not assigned in the Inspector!");
         }
     }
 
